@@ -116,7 +116,7 @@ Moment "moment"
   = TimeOffset
   / Timestamp
   / TimeUnit
-  / a:$("today" / "now") { return { type: 'special', value: a }; }
+  / a:$("today" / "now" / "all") { return { type: 'special', value: a }; }
 
 Timestamp
   = year:Year [-./]? month:Month [-./]? day:Day { return checkDate(year, month, day); }

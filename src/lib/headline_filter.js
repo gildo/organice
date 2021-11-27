@@ -57,6 +57,8 @@ const fromSpecial = (from) => {
     return temp;
   } else if (from.value === 'today') {
     return startOfDay(temp);
+  } else if (from.value === 'all') {
+    return new Date(-8640000000000000); // lowest possible date
   }
 };
 
@@ -66,6 +68,8 @@ const toSpecial = (to) => {
     return temp;
   } else if (to.value === 'today') {
     return endOfDay(temp);
+  } else if (to.value === 'all') {
+    return new Date(8640000000000000); // highest possible date
   }
 };
 
