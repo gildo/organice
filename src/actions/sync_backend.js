@@ -96,7 +96,7 @@ export const pushBackup = (pathOrFileId, contents) => {
     switch (client.type) {
       case 'Dropbox':
       case 'WebDAV':
-        client.createFile(`${pathOrFileId}.organice-bak`, contents);
+        /// Versioned with GIT on my server.
         break;
       case 'Google Drive':
         pathOrFileId = pathOrFileId.startsWith('/') ? pathOrFileId.substr(1) : pathOrFileId;
