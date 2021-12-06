@@ -22,11 +22,15 @@ function SearchModal(props) {
     searchFilter,
     searchFilterValid,
     searchFilterSuggestions,
+    allBookmarks,
     context,
     showClockedTimes,
     clockedTime,
     activeClocks,
   } = props;
+  const bookmarks = allBookmarks.get(context);
+  const bookmarkChosen = bookmarks.contains(searchFilter);
+  const canSaveBookmark = searchFilterValid && searchFilter.length !== 0;
 
   function handleHeaderClick(path, headerId) {
     props.onClose(path, headerId);
@@ -38,6 +42,14 @@ function SearchModal(props) {
 
   function handleFilterChange(event) {
     props.org.setSearchFilterInformation(event.target.value, event.target.selectionStart, context);
+  }
+
+  function onBookmarkButtonClick() {
+    if (bookmarkChosen) {
+      props.org.deleteBookmark(context, searchFilter);
+    } else if (canSaveBookmark) {
+      props.org.saveBookmark(context, searchFilter);
+    }
   }
 
   return (
@@ -57,38 +69,51 @@ function SearchModal(props) {
       )}
 
       {activeClocks ? null : (
-        <>
-          <datalist id="task-list__datalist-filter">
-            {searchFilterSuggestions.map((string, idx) => (
-              <option key={idx} value={string} />
-            ))}
-          </datalist>
+        <div className="search-input-container">
+          <div className="search-input-line">
+            <datalist id="task-list__datalist-filter">
+              {(searchFilter.length === 0 ? bookmarks : searchFilterSuggestions).map(
+                (string, idx) => (
+                  <option key={idx} value={string} />
+                )
+              )}
+            </datalist>
 
-          <div className="task-list__input-container">
-            <input
-              type="text"
-              value={searchFilter}
-              // On iOS, setting autoFocus here will move the contents of
-              // the drawer off the screen, because the keyboard pops up
-              // late when the height is already set to '92%'. Some other
-              // complications: There's no API to check if the keyboard is
-              // open or not. When setting the height of the container to
-              // something like 48% for iOS, this works on iPhone (tested
-              // on Xs and 6S), but when the keyboard is closed, the
-              // container is still small when the user wants to read the
-              // longer list without the keyboard in the way. There might
-              // be a better way: If the drawer wouldn't move, iOS likely
-              // would set the heights correctly automatically.
-              autoFocus={!isIos()}
-              className={classNames('textfield', 'task-list__filter-input', {
-                'task-list__filter-input--invalid': !!searchFilter && !searchFilterValid,
+            <div className="search__input-container">
+              <input
+                type="text"
+                value={searchFilter}
+                // On iOS, setting autoFocus here will move the contents of
+                // the drawer off the screen, because the keyboard pops up
+                // late when the height is already set to '92%'. Some other
+                // complications: There's no API to check if the keyboard is
+                // open or not. When setting the height of the container to
+                // something like 48% for iOS, this works on iPhone (tested
+                // on Xs and 6S), but when the keyboard is closed, the
+                // container is still small when the user wants to read the
+                // longer list without the keyboard in the way. There might
+                // be a better way: If the drawer wouldn't move, iOS likely
+                // would set the heights correctly automatically.
+                autoFocus={!isIos()}
+                className={classNames('textfield', 'task-list__filter-input', {
+                  'task-list__filter-input--invalid': !!searchFilter && !searchFilterValid,
+                })}
+                placeholder="e.g. -DONE doc|man :simple|easy :assignee:nobody|none"
+                list="task-list__datalist-filter"
+                onChange={handleFilterChange}
+              />
+            </div>
+
+            <i
+              className={classNames('fas fa-lg bookmark__icon ', {
+                'fa-star': !bookmarkChosen,
+                'fa-trash': bookmarkChosen,
+                bookmark__icon__enabled: canSaveBookmark,
               })}
-              placeholder="e.g. -DONE doc|man :simple|easy :assignee:nobody|none"
-              list="task-list__datalist-filter"
-              onChange={handleFilterChange}
+              onClick={onBookmarkButtonClick}
             />
           </div>
-        </>
+        </div>
       )}
 
       <div
@@ -117,6 +142,7 @@ const mapStateToProps = (state) => {
     searchFilter: state.org.present.getIn(['search', 'searchFilter']),
     searchFilterValid: state.org.present.getIn(['search', 'searchFilterValid']),
     searchFilterSuggestions: state.org.present.getIn(['search', 'searchFilterSuggestions']) || [],
+    allBookmarks: state.org.present.get('bookmarks'),
     showClockedTimes: state.org.present.getIn(['search', 'showClockedTimes']),
     clockedTime: state.org.present.getIn(['search', 'clockedTime']),
   };
